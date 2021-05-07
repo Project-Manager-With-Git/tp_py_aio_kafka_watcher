@@ -1,5 +1,6 @@
 import os
 import time
+import asyncio
 from pathlib import Path
 from typing import Dict, Union
 from schema_entry import EntryPoint
@@ -78,11 +79,16 @@ class Application(EntryPoint):
                 "items": {
                     "type": "string",
                 }
+            },
+            "use_uvloop": {
+                "type": "boolean",
+                "description": "是否使用uvloop作为事件循环",
+                "default": False
             }
         }
     }
 
-    async def watch(self):
+    async def watch(self) -> None:
         watch_kafka_topics = self.config["watch_kafka_topics"]
         watch_kafka_urls = self.config["watch_kafka_urls"]
         watch_kafka_group_id = self.config["watch_kafka_group_id"]
@@ -101,25 +107,18 @@ class Application(EntryPoint):
                 else:
                     v = vs
                 watch_kafka_options[ks] = v
-
-        async with KafkaWatcher.create(
-            *watch_kafka_topics,
-            bootstrap_servers=watch_kafka_urls,
-            group_id=watch_kafka_group_id,
-            auto_offset_reset=watch_kafka_auto_offset_reset,
-            **watch_kafka_options
-        ) as watcher:
-            await watcher.start()
-            try:
-                for msg in watcher:
-                    handdler(msg)
-            except (KeyboardInterrupt, SystemExit):
-                log.info('kafka watcher stoped')
-            except Exception as e:
-                log.error("kafka watcher get error", err=type(e), err_msg=str(e), exc_info=True, stack_info=True)
-            finally:
-                watcher.close()
-
+        try:
+            async with KafkaWatcher.create(
+                *watch_kafka_topics,
+                bootstrap_servers=watch_kafka_urls,
+                group_id=watch_kafka_group_id,
+                auto_offset_reset=watch_kafka_auto_offset_reset,
+                **watch_kafka_options
+            ) as watcher:
+                async for msg in watcher:
+                    await handdler(msg)
+        except Exception as e:
+            log.error("kafka watcher get error", err=type(e), err_msg=str(e), exc_info=True, stack_info=True)
 
     def _do_main(self) -> None:
         log.initialize_for_app(
@@ -128,20 +127,11 @@ class Application(EntryPoint):
         )
         log.info("获取任务配置", config=self.config)
 
-        watcher = KafkaWatcher.create(
-            *watch_kafka_topics,
-            bootstrap_servers=watch_kafka_urls,
-            group_id=watch_kafka_group_id,
-            auto_offset_reset=watch_kafka_auto_offset_reset,
-            **watch_kafka_options
-        )
-        await watcher.start()
+        if self.config.get("use_uvloop"):
+            import uvloop
+            uvloop.install()
+            log.warn('using UVLoop')
         try:
-            for msg in watcher:
-                handdler(msg)
+            asyncio.run(self.watch())
         except (KeyboardInterrupt, SystemExit):
             log.info('kafka watcher stoped')
-        except Exception as e:
-            log.error("kafka watcher get error", err=type(e), err_msg=str(e), exc_info=True, stack_info=True)
-        finally:
-            watcher.close()
