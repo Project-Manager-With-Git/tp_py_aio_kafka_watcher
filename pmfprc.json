@@ -1,0 +1,12 @@
+{
+    "env": "venv",
+    "added_components": {
+        "tp_py_kafka_watcher//watcher_app": "tp_py_aio_kafka_watcher_watcher/app.py",
+        "tp_py_kafka_watcher//watcher": "tp_py_aio_kafka_watcher_watcher/watcher.py",
+        "tp_py_kafka_watcher//watcher_main": "tp_py_aio_kafka_watcher_watcher/__main__.py",
+        "tp_py_kafka_watcher//watcher_handdler": "tp_py_aio_kafka_watcher_watcher/handdler.py",
+        "tp_py_kafka_watcher//sender_app": "tp_py_aio_kafka_watcher_sender/app.py",
+        "tp_py_kafka_watcher//sender": "tp_py_aio_kafka_watcher_sender/sender.py",
+        "tp_py_kafka_watcher//sender_main": "tp_py_aio_kafka_watcher_sender/__main__.py"
+    }
+}
