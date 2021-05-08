@@ -1,7 +1,7 @@
 from typing import Dict, Any, Union
 from pyloggerhelper import log
 from pyproxypattern import Proxy
-from kafka import KafkaProducer
+from aiokafka import AIOKafkaProducer as KafkaProducer
 
 
 class KafkaSender(Proxy):

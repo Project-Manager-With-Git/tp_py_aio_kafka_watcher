@@ -1,10 +1,10 @@
 import os
 import time
+import asyncio
 from pathlib import Path
 from typing import Dict, Union
 from schema_entry import EntryPoint
 from pyloggerhelper import log
-# from watchdog.observers.polling import PollingObserver as Observer # 如果在docker中部署可以用PollingObserver
 from sender import KafkaSender
 
 
@@ -54,18 +54,16 @@ class Application(EntryPoint):
                 "items": {
                     "type": "string",
                 }
+            },
+            "uvloop": {
+                "type": "boolean",
+                "description": "是否使用uvloop作为事件循环",
+                "default": False
             }
         }
     }
-
-    def do_main(self) -> None:
-        log.initialize_for_app(
-            app_name=self.config.get("app_name"),
-            log_level=self.config.get("log_level")
-        )
-        log.info("获取任务配置", config=self.config)
+    async def send(self)->None:
         send_kafka_urls = self.config["send_kafka_urls"]
-
         send_kafka_options: Dict[str, Union[str, int, bool]] = {}
         _send_kafka_options = self.config.get("send_kafka_options")
         if _send_kafka_options:
@@ -85,11 +83,26 @@ class Application(EntryPoint):
             **send_kafka_options
         )
         try:
-            sender.send(topic="topic1-1-1", value=b"msg1", key=b"key1", headers=[("h1", b"h1"), ("h2", b"h2")])
-            log.info("send msg",topic="topic1-1-1", value=b"msg1", key=b"key1",headers=[("h1", b"h1"), ("h2", b"h2")])
-        except (KeyboardInterrupt, SystemExit):
-            log.info('kafka sender stoped')
+            async with sender:
+                # Produce message
+                await sender.send_and_wait(topic="topic1-1-1", value=b"msg1", key=b"key1", headers=[("h1", b"h1"), ("h2", b"h2")])
+                log.info("send msg",topic="topic1-1-1", value=b"msg1", key=b"key1",headers=[("h1", b"h1"), ("h2", b"h2")])
         except Exception as e:
             log.error("kafka sender get error", err=type(e), err_msg=str(e), exc_info=True, stack_info=True)
-        finally:
-            sender.close()
+
+
+    def do_main(self) -> None:
+        log.initialize_for_app(
+            app_name=self.config.get("app_name"),
+            log_level=self.config.get("log_level")
+        )
+        log.info("获取任务配置", config=self.config)
+
+        if self.config.get("uvloop"):
+            import uvloop
+            uvloop.install()
+            log.warn('using UVLoop')
+        try:
+            asyncio.run(self.send())
+        except (KeyboardInterrupt, SystemExit):
+            log.info('kafka watcher stoped')

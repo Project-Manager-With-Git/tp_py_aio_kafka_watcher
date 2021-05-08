@@ -80,7 +80,7 @@ class Application(EntryPoint):
                     "type": "string",
                 }
             },
-            "use_uvloop": {
+            "uvloop": {
                 "type": "boolean",
                 "description": "是否使用uvloop作为事件循环",
                 "default": False
@@ -120,14 +120,14 @@ class Application(EntryPoint):
         except Exception as e:
             log.error("kafka watcher get error", err=type(e), err_msg=str(e), exc_info=True, stack_info=True)
 
-    def _do_main(self) -> None:
+    def do_main(self) -> None:
         log.initialize_for_app(
             app_name=self.config.get("app_name"),
             log_level=self.config.get("log_level")
         )
         log.info("获取任务配置", config=self.config)
 
-        if self.config.get("use_uvloop"):
+        if self.config.get("uvloop"):
             import uvloop
             uvloop.install()
             log.warn('using UVLoop')

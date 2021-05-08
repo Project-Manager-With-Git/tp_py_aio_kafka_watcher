@@ -1,0 +1,76 @@
+{
+    "language": "py",
+    "description": "使用异步接口的kafka监听器和消息生产者模板",
+    "author": "hsz12",
+    "template_type": "watcher",
+    "requires": [
+        "pyproxypattern >= 0.0.1",
+        "schema_entry >= 0.1.5",
+        "pyloggerhelper >= 0.0.2",
+        "python-snappy >= 0.6.0",
+        "lz4tools >= 1.3.1.2",
+        "xxhash >= 2.0.2",
+        "aiokafka >= 0.7.0",
+        "uvloop >= 0.15.2"
+    ],
+    "test_requires": [
+        "coverage >= 5.5",
+        "mypy >= 0.800",
+        "autopep8 >= 1.5.6",
+        "pylint >= 2.8.0",
+        "pydocstyle>=6.0.0"
+    ],
+    "template_keys": {
+        "app_name": {
+            "description": "",
+            "default": "project_name"
+        }
+    },
+    "components": {
+        "watcher_app": {
+            "source": "watcher/app.py.jinja",
+            "description": "监听应用主体",
+            "default_path": "{{ project_name }}_watcher/app.py"
+        },
+        "watcher": {
+            "source": "watcher/watcher.py.jinja",
+            "description": "消费者对象的代理",
+            "default_path": "{{ project_name }}_watcher/watcher.py"
+        },
+        "watcher_main": {
+            "source": "watcher/__main__.py.jinja",
+            "description": "监听应用入口",
+            "default_path": "{{ project_name }}_watcher/__main__.py"
+        },
+        "watcher_handdler": {
+            "source": "watcher/handdler.py.jinja",
+            "description": "消息的处理函数",
+            "default_path": "{{ project_name }}_watcher/handdler.py"
+        },
+        "sender_app": {
+            "source": "sender/app.py.jinja",
+            "description": "发送端应用主体",
+            "default_path": "{{ project_name }}_sender/app.py"
+        },
+        "sender": {
+            "source": "sender/sender.py.jinja",
+            "description": "生产者对象的代理",
+            "default_path": "{{ project_name }}_sender/sender.py"
+        },
+        "sender_main": {
+            "source": "sender/__main__.py.jinja",
+            "description": "发送端应用入口",
+            "default_path": "{{ project_name }}_sender/__main__.py"
+        },
+        "dockerfile": {
+            "source": "dockerfile.jinja",
+            "description": "用于打包镜像的dockerfile文件",
+            "default_path": "dockerfile"
+        },
+        "dockercompose": {
+            "source": "cp_dockercompose//kafka_broker_standalone",
+            "description": "用于测试程序的docker-compose文件",
+            "default_path": "docker-compose.yml"
+        }
+    }
+}
