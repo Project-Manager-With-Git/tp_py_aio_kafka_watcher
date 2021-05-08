@@ -9,7 +9,7 @@ from sender import KafkaSender
 
 
 class Application(EntryPoint):
-    _name = "tp_py_aio_kafka_watcher_sender"
+    _name = "{{ app_name }}_sender"
     schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -30,7 +30,7 @@ class Application(EntryPoint):
                 "type": "string",
                 "title": "n",
                 "description": "应用名",
-                "default": "tp_py_aio_kafka_watcher_watcher"
+                "default": "{{ app_name }}_sender"
             },
             "log_level": {
                 "type": "string",
