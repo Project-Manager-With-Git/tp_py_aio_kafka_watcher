@@ -1,7 +1,7 @@
 {
     "language": "py",
     "description": "使用异步接口的kafka监听器和消息生产者模板",
-    "author": "hsz12",
+    "author": "hsz",
     "template_type": "watcher",
     "requires": [
         "pyproxypattern >= 0.0.1",
