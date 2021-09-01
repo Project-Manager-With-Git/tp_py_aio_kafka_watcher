@@ -68,7 +68,7 @@
             "default_path": "dockerfile"
         },
         "dockercompose": {
-            "source": "cp_dockercompose//kafka_broker_standalone",
+            "source": "cp_dockercompose@v0.0.2//kafka_broker_standalone",
             "description": "用于测试程序的docker-compose文件",
             "default_path": "docker-compose.yml"
         }
